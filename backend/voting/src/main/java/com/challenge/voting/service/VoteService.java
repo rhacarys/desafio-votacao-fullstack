@@ -22,14 +22,14 @@ public class VoteService {
     @Transactional
     public void registerVote(Long sessionId, VoteRequestDTO request) {
         VotingSession session = sessionRepository.findById(sessionId)
-                .orElseThrow(() -> new BusinessException("Voting session not found"));
+                .orElseThrow(() -> new BusinessException("SESSION_NOT_FOUND", "Voting session not found"));
 
         if (!session.isOpen()) {
-            throw new BusinessException("Voting session is closed.");
+            throw new BusinessException("SESSION_CLOSED", "Voting session is closed.");
         }
 
         if (voteRepository.existsByVotingSessionIdAndAssociateCpf(sessionId, request.associateCpf())) {
-            throw new BusinessException("Associate has already voted in this session.");
+            throw new BusinessException("DUPLICATE_VOTE", "Associate has already voted in this session.");
         }
 
         Vote vote = Vote.builder()

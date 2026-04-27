@@ -14,7 +14,7 @@ import java.util.Map;
 public class GlobalExceptionHandler {
     @ExceptionHandler(BusinessException.class)
     public ResponseEntity<Map<String, Object>> handleBusinessException(BusinessException ex) {
-        return buildResponse(HttpStatus.UNPROCESSABLE_CONTENT, ex.getMessage());
+        return buildResponse(HttpStatus.UNPROCESSABLE_CONTENT, ex.getCode(), ex.getMessage());
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
@@ -24,19 +24,20 @@ public class GlobalExceptionHandler {
                 .findFirst()
                 .orElse("Validation failed");
 
-        return buildResponse(HttpStatus.BAD_REQUEST, errorMessage);
+        return buildResponse(HttpStatus.BAD_REQUEST, "VALIDATION_ERROR", errorMessage);
     }
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<Map<String, Object>> handleGenericException(Exception ex) {
-        return buildResponse(HttpStatus.INTERNAL_SERVER_ERROR, "An unexpected error occurred.");
+        return buildResponse(HttpStatus.INTERNAL_SERVER_ERROR, "UNKNOWN_ERROR", "An unexpected error occurred.");
     }
 
-    private ResponseEntity<Map<String, Object>> buildResponse(HttpStatus status, String message) {
+    private ResponseEntity<Map<String, Object>> buildResponse(HttpStatus status, String errorCode, String message) {
         Map<String, Object> body = new HashMap<>();
         body.put("timestamp", LocalDateTime.now());
         body.put("status", status.value());
         body.put("error", status.getReasonPhrase());
+        body.put("code", errorCode);
         body.put("message", message);
         return ResponseEntity.status(status).body(body);
     }

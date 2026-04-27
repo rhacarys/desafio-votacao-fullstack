@@ -24,7 +24,7 @@ public class AgendaService {
 
     public AgendaDetailsDTO getAgendaDetails(Long agendaId) {
         Agenda agenda = agendaRepository.findById(agendaId)
-                .orElseThrow(() -> new BusinessException("Agenda not found"));
+                .orElseThrow(() -> new BusinessException("AGENDA_NOT_FOUND", "Agenda not found"));
 
         Optional<VotingSession> sessionOpt = sessionRepository.findByAgendaId(agendaId);
 

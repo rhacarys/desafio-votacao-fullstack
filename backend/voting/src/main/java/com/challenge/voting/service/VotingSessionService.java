@@ -20,10 +20,11 @@ public class VotingSessionService {
     @Transactional
     public VotingSession openSession(Long agendaId, Integer durationInMinutes) {
         Agenda agenda = agendaRepository.findById(agendaId)
-                .orElseThrow(() -> new BusinessException("Agenda not found"));
+                .orElseThrow(() -> new BusinessException("AGENDA_NOT_FOUND", "Agenda not found"));
 
         if (sessionRepository.findByAgendaId(agendaId).isPresent()) {
-            throw new BusinessException("A voting session is already open or has existed for this agenda.");
+            throw new BusinessException("SESSION_ALREADY_EXISTS",
+                    "A voting session is already open or has existed for this agenda.");
         }
 
         // Default 1 minute if not specified or invalid
