@@ -50,7 +50,7 @@ export function AgendaDetails() {
           )}
 
           {agenda.status === "CLOSED" && (
-            <AgendaClosedState yesVotes={agenda.yesVotes} noVotes={agenda.noVotes} totalVotes={agenda.totalVotes} />
+            <AgendaClosedState yesVotes={agenda.yesVotes ?? 0} noVotes={agenda.noVotes ?? 0} totalVotes={agenda.totalVotes ?? 0} />
           )}
         </Box>
       </Card>

@@ -9,12 +9,12 @@ export interface AgendaDetails {
   title: string;
   description: string;
   status: "PENDING" | "OPEN" | "CLOSED";
-  sessionId: number | null;
-  opensAt: string | null;
-  closesAt: string | null;
-  yesVotes: number;
-  noVotes: number;
-  totalVotes: number;
+  sessionId?: number;
+  opensAt?: string;
+  closesAt?: string;
+  yesVotes?: number;
+  noVotes?: number;
+  totalVotes?: number;
 }
 
 export interface VotingSession {
