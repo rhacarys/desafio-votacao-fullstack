@@ -83,7 +83,7 @@ class VotingSessionControllerTest {
         mockMvc.perform(post("/api/v1/sessions/open")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().isUnprocessableEntity())
+                .andExpect(status().isUnprocessableContent())
                 .andExpect(jsonPath("$.code").value("AGENDA_NOT_FOUND"))
                 .andExpect(jsonPath("$.message").value("Agenda not found"));
     }
@@ -98,7 +98,7 @@ class VotingSessionControllerTest {
         mockMvc.perform(post("/api/v1/sessions/open")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().isUnprocessableEntity())
+                .andExpect(status().isUnprocessableContent())
                 .andExpect(jsonPath("$.code").value("SESSION_ALREADY_EXISTS"))
                 .andExpect(jsonPath("$.message").value("A voting session is already open or has existed for this agenda."));
     }
@@ -133,7 +133,7 @@ class VotingSessionControllerTest {
         mockMvc.perform(post("/api/v1/sessions/999/votes")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().isUnprocessableEntity())
+                .andExpect(status().isUnprocessableContent())
                 .andExpect(jsonPath("$.code").value("SESSION_NOT_FOUND"))
                 .andExpect(jsonPath("$.message").value("Voting session not found"));
     }
@@ -148,7 +148,7 @@ class VotingSessionControllerTest {
         mockMvc.perform(post("/api/v1/sessions/100/votes")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().isUnprocessableEntity())
+                .andExpect(status().isUnprocessableContent())
                 .andExpect(jsonPath("$.code").value("SESSION_CLOSED"))
                 .andExpect(jsonPath("$.message").value("Voting session is closed."));
     }
@@ -163,7 +163,7 @@ class VotingSessionControllerTest {
         mockMvc.perform(post("/api/v1/sessions/100/votes")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().isUnprocessableEntity())
+                .andExpect(status().isUnprocessableContent())
                 .andExpect(jsonPath("$.code").value("DUPLICATE_VOTE"))
                 .andExpect(jsonPath("$.message").value("Associate has already voted in this session."));
     }

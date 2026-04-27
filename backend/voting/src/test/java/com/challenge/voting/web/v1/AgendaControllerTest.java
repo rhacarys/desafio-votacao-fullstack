@@ -104,7 +104,7 @@ class AgendaControllerTest {
 
         mockMvc.perform(get("/api/v1/agendas/99")
                 .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isUnprocessableEntity())
+                .andExpect(status().isUnprocessableContent())
                 .andExpect(jsonPath("$.code").value("AGENDA_NOT_FOUND"))
                 .andExpect(jsonPath("$.message").value("Agenda not found"));
     }
