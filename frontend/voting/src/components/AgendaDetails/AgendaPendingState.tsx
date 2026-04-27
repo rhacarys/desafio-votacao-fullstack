@@ -41,7 +41,7 @@ export function AgendaPendingState({ agendaId }: AgendaPendingStateProps) {
       <Box sx={{ width: "100%", maxWidth: 300 }}>
         <TextField
           fullWidth
-          label="Duração em Minutos (Opcional)"
+          label="Duração em Minutos"
           variant="outlined"
           type="number"
           value={duration}

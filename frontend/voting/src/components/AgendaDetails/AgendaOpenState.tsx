@@ -42,7 +42,7 @@ export function AgendaOpenState({ sessionId, closesAt }: AgendaOpenStateProps) {
           setCpf("");
         },
         onError: (error: any) => {
-          showSnackbar(error.response?.data?.message || "Erro ao registrar voto. Verifique se você já votou.", "error");
+          showSnackbar(error.uiMessage || "Erro ao registrar voto. Verifique se você já votou.", "error");
         },
       },
     );
