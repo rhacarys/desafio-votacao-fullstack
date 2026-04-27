@@ -1,19 +1,19 @@
 import { useState } from "react";
-import { Stack, Typography, Box, TextField, Button, CircularProgress, Alert } from "@mui/material";
+import { Stack, Typography, Box, TextField, Button, CircularProgress } from "@mui/material";
 import PlayArrowIcon from "@mui/icons-material/PlayArrow";
 import { useOpenSession } from "../../hooks/useVoting";
+import { useGlobalSnackbar } from "../../contexts/SnackbarContext";
 
 interface AgendaPendingStateProps {
   agendaId: number;
 }
 
 export function AgendaPendingState({ agendaId }: AgendaPendingStateProps) {
+  const { showSnackbar } = useGlobalSnackbar();
   const [duration, setDuration] = useState("1");
-  const [feedback, setFeedback] = useState<{ type: "error"; text: string } | null>(null);
   const { mutate: openSession, isPending } = useOpenSession();
 
   const handleOpenSession = () => {
-    setFeedback(null);
     const durationNum = parseInt(duration, 10);
     openSession(
       {
@@ -21,19 +21,18 @@ export function AgendaPendingState({ agendaId }: AgendaPendingStateProps) {
         durationInMinutes: isNaN(durationNum) || durationNum < 1 ? 1 : durationNum,
       },
       {
-        onError: (error: any) =>
-          setFeedback({
-            type: "error",
-            text: error.response?.data?.message || "Erro ao abrir sessão.",
-          }),
+        onSuccess: () => {
+          showSnackbar("Sessão de votação iniciada!", "success");
+        },
+        onError: (error: any) => {
+          showSnackbar(error.response?.data?.message || "Erro ao iniciar a sessão. Tente novamente.", "error");
+        },
       },
     );
   };
 
   return (
     <Stack spacing={3} sx={{ alignItems: "center", py: 2 }}>
-      {feedback && <Alert severity={feedback.type}>{feedback.text}</Alert>}
-
       <PlayArrowIcon sx={{ fontSize: 56, color: "primary.main" }} />
       <Typography variant="h6" sx={{ fontWeight: "bold" }}>
         Iniciar Votação

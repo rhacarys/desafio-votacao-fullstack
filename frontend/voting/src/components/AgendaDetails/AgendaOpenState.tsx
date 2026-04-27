@@ -1,8 +1,9 @@
 import { useState, useEffect } from "react";
-import { Box, Typography, TextField, Grid, Button, Alert } from "@mui/material";
+import { Box, Button, CircularProgress, Grid, Typography, TextField } from "@mui/material";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import HighlightOffIcon from "@mui/icons-material/HighlightOff";
 import { useVote } from "../../hooks/useVoting";
+import { useGlobalSnackbar } from "../../contexts/SnackbarContext";
 
 interface AgendaOpenStateProps {
   sessionId: number;
@@ -10,9 +11,9 @@ interface AgendaOpenStateProps {
 }
 
 export function AgendaOpenState({ sessionId, closesAt }: AgendaOpenStateProps) {
+  const { showSnackbar } = useGlobalSnackbar();
   const [cpf, setCpf] = useState("");
   const [timeLeft, setTimeLeft] = useState<number | null>(null);
-  const [feedback, setFeedback] = useState<{ type: "success" | "error"; text: string } | null>(null);
   const { mutate: registerVote, isPending } = useVote();
 
   useEffect(() => {
@@ -29,23 +30,20 @@ export function AgendaOpenState({ sessionId, closesAt }: AgendaOpenStateProps) {
 
   const handleVote = (choice: "YES" | "NO") => {
     if (cpf.length !== 11) {
-      setFeedback({ type: "error", text: "O CPF deve ter exatamente 11 dígitos numéricos." });
+      showSnackbar("O CPF deve ter exatamente 11 dígitos.", "warning");
       return;
     }
 
-    setFeedback(null);
     registerVote(
       { sessionId, vote: { associateCpf: cpf, choice } },
       {
         onSuccess: () => {
-          setFeedback({ type: "success", text: "Voto computado com sucesso!" });
+          showSnackbar("Seu voto foi computado com sucesso!", "success");
           setCpf("");
         },
-        onError: (error: any) =>
-          setFeedback({
-            type: "error",
-            text: error.response?.data?.message || "Erro ao votar.",
-          }),
+        onError: (error: any) => {
+          showSnackbar(error.response?.data?.message || "Erro ao registrar voto. Verifique se você já votou.", "error");
+        },
       },
     );
   };
@@ -58,12 +56,6 @@ export function AgendaOpenState({ sessionId, closesAt }: AgendaOpenStateProps) {
 
   return (
     <Box sx={{ maxWidth: 400, mx: "auto" }}>
-      {feedback && (
-        <Alert severity={feedback.type} sx={{ mb: 4 }}>
-          {feedback.text}
-        </Alert>
-      )}
-
       <Typography variant="h6" align="center" sx={{ fontWeight: "bold", mb: 3 }}>
         Registre seu Voto
       </Typography>
@@ -85,7 +77,7 @@ export function AgendaOpenState({ sessionId, closesAt }: AgendaOpenStateProps) {
             variant="outlined"
             color="success"
             size="large"
-            startIcon={<CheckCircleIcon />}
+            startIcon={isPending ? <CircularProgress size={20} color="success" /> : <CheckCircleIcon />}
             onClick={() => handleVote("YES")}
             disabled={isPending || cpf.length !== 11}
             sx={{ py: 1.5, borderWidth: 2, fontWeight: "bold", "&:hover": { borderWidth: 2 } }}
@@ -99,7 +91,7 @@ export function AgendaOpenState({ sessionId, closesAt }: AgendaOpenStateProps) {
             variant="outlined"
             color="error"
             size="large"
-            startIcon={<HighlightOffIcon />}
+            startIcon={isPending ? <CircularProgress size={20} color="error" /> : <HighlightOffIcon />}
             onClick={() => handleVote("NO")}
             disabled={isPending || cpf.length !== 11}
             sx={{ py: 1.5, borderWidth: 2, fontWeight: "bold", "&:hover": { borderWidth: 2 } }}

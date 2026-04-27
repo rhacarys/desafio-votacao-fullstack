@@ -10,6 +10,7 @@ import {
   CircularProgress,
 } from "@mui/material";
 import { useCreateAgenda } from "../../hooks/useVoting";
+import { useGlobalSnackbar } from "../../contexts/SnackbarContext";
 
 interface CreateAgendaDialogProps {
   open: boolean;
@@ -17,10 +18,10 @@ interface CreateAgendaDialogProps {
 }
 
 export function CreateAgendaDialog({ open, onClose }: CreateAgendaDialogProps) {
+  const { showSnackbar } = useGlobalSnackbar();
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
-
-  const { mutate, isPending } = useCreateAgenda();
+  const { mutate: createAgenda, isPending } = useCreateAgenda();
 
   const handleClose = () => {
     if (!isPending) {
@@ -32,11 +33,15 @@ export function CreateAgendaDialog({ open, onClose }: CreateAgendaDialogProps) {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    mutate(
+    createAgenda(
       { title, description },
       {
         onSuccess: () => {
+          showSnackbar("Pauta criada com sucesso!", "success");
           handleClose();
+        },
+        onError: () => {
+          showSnackbar("Erro ao criar pauta.", "error");
         },
       },
     );
