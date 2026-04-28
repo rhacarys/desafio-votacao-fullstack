@@ -1,17 +1,21 @@
 package com.challenge.voting;
 
+import com.challenge.voting.application.dto.CpfStatusDTO;
 import com.challenge.voting.application.dto.VoteRequestDTO;
 import com.challenge.voting.domain.Agenda;
 import com.challenge.voting.domain.VotingSession;
 import com.challenge.voting.domain.enums.VoteChoice;
+import com.challenge.voting.infra.client.CpfValidationClient;
 import com.challenge.voting.repository.AgendaRepository;
 import com.challenge.voting.repository.VotingSessionRepository;
 import com.challenge.voting.web.v1.AgendaController;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
@@ -19,6 +23,9 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
+
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -40,6 +47,14 @@ class VotingIntegrationTest {
 
     @Autowired
     private VotingSessionRepository sessionRepository;
+
+    @MockitoBean
+    private CpfValidationClient cpfClient;
+
+    @BeforeEach
+    void setUp() {
+        when(cpfClient.validateCpf(anyString())).thenReturn(new CpfStatusDTO("ABLE_TO_VOTE"));
+    }
 
     @Test
     @DisplayName("Full successful flow (Create -> Open -> Vote)")
@@ -76,6 +91,7 @@ class VotingIntegrationTest {
         VotingSession session = sessionRepository.save(VotingSession.builder()
                 .agenda(agenda)
                 .opensAt(Instant.now())
+                .closesAt(Instant.now().plus(1, ChronoUnit.MINUTES))
                 .build());
 
         var vote = new VoteRequestDTO("11122233344", VoteChoice.NO);

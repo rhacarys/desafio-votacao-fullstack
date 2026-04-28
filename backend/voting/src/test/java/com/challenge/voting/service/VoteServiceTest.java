@@ -2,11 +2,13 @@ package com.challenge.voting.service;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
+import com.challenge.voting.application.dto.CpfStatusDTO;
 import com.challenge.voting.application.dto.VoteRequestDTO;
 import com.challenge.voting.domain.Vote;
 import com.challenge.voting.domain.VotingSession;
 import com.challenge.voting.domain.enums.VoteChoice;
 import com.challenge.voting.domain.exception.BusinessException;
+import com.challenge.voting.infra.client.CpfValidationClient;
 import com.challenge.voting.repository.VoteRepository;
 import com.challenge.voting.repository.VotingSessionRepository;
 import org.junit.jupiter.api.BeforeEach;
@@ -21,6 +23,9 @@ import java.util.Optional;
 class VoteServiceTest {
 
     @Mock
+    private CpfValidationClient cpfClient;
+
+    @Mock
     private VoteRepository voteRepository;
 
     @Mock
@@ -31,11 +36,14 @@ class VoteServiceTest {
 
     private VotingSession sessionMock;
     private VoteRequestDTO requestDTO;
+    private CpfStatusDTO ableStatus;
 
     @BeforeEach
     void setUp() {
         sessionMock = mock(VotingSession.class);
         requestDTO = new VoteRequestDTO("12345678901", VoteChoice.YES);
+        ableStatus = new CpfStatusDTO("ABLE_TO_VOTE");
+        when(cpfClient.validateCpf(requestDTO.associateCpf())).thenReturn(ableStatus);
     }
 
     @Test
@@ -91,6 +99,34 @@ class VoteServiceTest {
                 () -> voteService.registerVote(sessionId, requestDTO));
 
         assertEquals("DUPLICATE_VOTE", exception.getCode());
+        verify(voteRepository, never()).save(any(Vote.class));
+    }
+
+    @Test
+    void shouldThrowExceptionWhenUserUnableToVote() {
+        Long sessionId = 1L;
+
+        when(cpfClient.validateCpf(requestDTO.associateCpf()))
+                .thenReturn(new CpfStatusDTO("UNABLE_TO_VOTE"));
+
+        BusinessException exception = assertThrows(BusinessException.class,
+                () -> voteService.registerVote(sessionId, requestDTO));
+
+        assertEquals("USER_UNABLE_TO_VOTE", exception.getCode());
+        verify(voteRepository, never()).save(any(Vote.class));
+    }
+
+    @Test
+    void shouldThrowExceptionWhenCpfIsInvalid() {
+        Long sessionId = 1L;
+
+        when(cpfClient.validateCpf(requestDTO.associateCpf()))
+                .thenThrow(new BusinessException("CPF_INVALID", "The provided CPF is invalid or not found"));
+
+        BusinessException exception = assertThrows(BusinessException.class,
+                () -> voteService.registerVote(sessionId, requestDTO));
+
+        assertEquals("CPF_INVALID", exception.getCode());
         verify(voteRepository, never()).save(any(Vote.class));
     }
 }

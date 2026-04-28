@@ -14,6 +14,10 @@ import java.util.Map;
 public class GlobalExceptionHandler {
     @ExceptionHandler(BusinessException.class)
     public ResponseEntity<Map<String, Object>> handleBusinessException(BusinessException ex) {
+        if ("CPF_INVALID".equals(ex.getCode())) {
+            return buildResponse(HttpStatus.NOT_FOUND, "CPF_INVALID", ex.getMessage());
+        }
+
         return buildResponse(HttpStatus.UNPROCESSABLE_CONTENT, ex.getCode(), ex.getMessage());
     }
 
