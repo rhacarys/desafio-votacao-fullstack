@@ -1,86 +1,82 @@
-# Votação
+# Desafio Técnico: Sistema de Votação (Cooperativismo)
 
-## Objetivo
+Solução fullstack para gerenciamento de sessões de votação em assembleias, projetada para alta concorrência e resiliência.
 
-No cooperativismo, cada associado possui um voto e as decisões são tomadas em assembleias, por votação. Imagine que você deve criar uma solução we para gerenciar e participar dessas sessões de votação.
-Essa solução deve ser executada na nuvem e promover as seguintes funcionalidades através de uma API REST / Front:
+## Stack Tecnológica
 
-- Cadastrar uma nova pauta
-- Abrir uma sessão de votação em uma pauta (a sessão de votação deve ficar aberta por
-  um tempo determinado na chamada de abertura ou 1 minuto por default)
-- Receber votos dos associados em pautas (os votos são apenas 'Sim'/'Não'. Cada associado
-  é identificado por um id único e pode votar apenas uma vez por pauta)
-- Contabilizar os votos e dar o resultado da votação na pauta
+* **Backend:** Java 26, Spring Boot 4.0.6
+* **Frontend:** React 19, TypeScript 6.0, Vite 6, TanStack Query, Material UI 9
+* **Banco de Dados:** PostgreSQL 16 (H2 para testes de integração)
+* **Infraestrutura:** Docker, Docker Compose
+* **Testes de Carga:** k6
 
-Para fins de exercício, a segurança das interfaces pode ser abstraída e qualquer chamada para as interfaces pode ser considerada como autorizada. A solução deve ser construída em java com Spring-boot e Angular/React conforme orientação, mas os frameworks e bibliotecas são de livre escolha (desde que não infrinja direitos de uso).
+## Arquitetura e Decisões Técnicas
 
-É importante que as pautas e os votos sejam persistidos e que não sejam perdidos com o restart da aplicação.
+A aplicação foi estruturada utilizando uma arquitetura em camadas (Layered Architecture), isolando responsabilidades entre rotas, regras de negócio e acesso a dados.
 
-## Como proceder
+* **Tratamento de Exceções:** Centralizado via `@RestControllerAdvice`. Padroniza os retornos de erro da API (ex: `422 Unprocessable Entity` para regras de negócio violadas e `404 Not Found` para recursos inexistentes ou CPFs impossibilitados de votar), facilitando a interceptação de erros no frontend pelo Axios.
+* **Frontend Data Fetching:** Adoção do TanStack Query para gerenciamento do estado assíncrono. Justifica-se pela necessidade de cache eficiente, retry automático e invalidação de queries ao interagir com a API de votação.
+* **Logs e Rastreabilidade:** Uso de SLF4J para auditoria das operações np backend.
 
-Por favor, realize o FORK desse repositório e implemente sua solução no FORK em seu repositório GItHub, ao final, notifique da conclusão para que possamos analisar o código implementado.
+## Resolução das Tarefas Bônus
 
-Lembre de deixar todas as orientações necessárias para executar o seu código.
+### Bônus 1: Integração com Sistemas Externos (Validação de CPF)
+Implementado o `CpfValidationClient` atuando como uma Facade para simular a chamada externa. 
+* A lógica injeta aleatoriedade nas respostas.
+* Em conformidade estrita com o edital: CPFs inválidos ou não autorizados lançam uma exceção específica capturada pelo handler, retornando `HTTP 404` ou com o payload `{"status": "UNABLE_TO_VOTE"}`. CPFs autorizados prosseguem com o fluxo normal.
 
-### Tarefas bônus
+### Bônus 2: Performance (Cenário de Alta Carga)
+Para suportar centenas de milhares de votos sem degradação do banco de dados:
+* **Indexação:** Criação de índice único composto em `(voting_session_id, associate_cpf)` na tabela de votos. Garante validação de duplicidade em tempo logarítmico (O(log n)) e previne *race conditions*.
+* **Connection Pooling:** Ajuste do HikariCP para suportar picos de concorrência.
+* **Validação:** Implementação de testes de carga com **k6** (100 VUs) encapsulados via Docker.
 
-- Tarefa Bônus 1 - Integração com sistemas externos
-  - Criar uma Facade/Client Fake que retorna aleátoriamente se um CPF recebido é válido ou não.
-  - Caso o CPF seja inválido, a API retornará o HTTP Status 404 (Not found). Você pode usar geradores de CPF para gerar CPFs válidos
-  - Caso o CPF seja válido, a API retornará se o usuário pode (ABLE_TO_VOTE) ou não pode (UNABLE_TO_VOTE) executar a operação. Essa operação retorna resultados aleatórios, portanto um mesmo CPF pode funcionar em um teste e não funcionar no outro.
+### Bônus 3: Versionamento da API
+Adotada a estratégia de **URI Versioning** (`/api/v1/...`).
+* **Justificativa:** É a abordagem mais explícita e amigável para o consumo do frontend. Facilita o roteamento em API Gateways e o cache em proxies reversos, não dependendo de manipulação de *Headers* customizados pelo cliente.
 
+## Como Executar
+
+O projeto está totalmente conteinerizado. É necessário ter o Docker e o Docker Compose instalados.
+
+Na raiz do repositório, execute:
+
+```bash
+docker-compose up --build
 ```
-// CPF Ok para votar
-{
-    "status": "ABLE_TO_VOTE
-}
-// CPF Nao Ok para votar - retornar 404 no client tb
-{
-    "status": "UNABLE_TO_VOTE
-}
+
+### Acessos:
+* **Frontend:** `http://localhost`
+* **Backend API:** `http://localhost:8080/api/v1`
+* **Swagger UI (Documentação da API):** `http://localhost:8080/swagger-ui.html`
+
+## Execução dos Testes
+
+A suíte de testes cobre todas as camadas da aplicação e pode ser executada isoladamente.
+
+### Backend (Integração e Unidade)
+Garante as regras de negócio e contratos de API utilizando o H2 Database em memória.
+```bash
+cd backend/voting
+mvn clean test
 ```
 
-Exemplos de retorno do serviço
+### Frontend (Unidade e Componentes)
+Garante a renderização, os hooks e o comportamento da interface utilizando Vitest.
+```bash
+cd frontend/voting
+npm install
+npm run test
+```
 
-### Tarefa Bônus 2 - Performance
+### Performance (Carga e Stress)
+Requer que a aplicação já esteja em execução via Docker. Executa o script do k6 para simular concorrência massiva.
 
-- Imagine que sua aplicação possa ser usada em cenários que existam centenas de
-  milhares de votos. Ela deve se comportar de maneira performática nesses
-  cenários
-- Testes de performance são uma boa maneira de garantir e observar como sua
-  aplicação se comporta
+![Resultados de performance](tests/results.png)
 
-### Tarefa Bônus 3 - Versionamento da API
+```bash
+docker-compose run --rm k6
+```
 
-○ Como você versionaria a API da sua aplicação? Que estratégia usar?
-
-## O que será analisado
-
-- Simplicidade no design da solução (evitar over engineering)
-- Organização do código
-- Arquitetura do projeto
-- Boas práticas de programação (manutenibilidade, legibilidade etc)
-- Possíveis bugs
-- Tratamento de erros e exceções
-- Explicação breve do porquê das escolhas tomadas durante o desenvolvimento da solução
-- Uso de testes automatizados e ferramentas de qualidade
-- Limpeza do código
-- Documentação do código e da API
-- Logs da aplicação
-- Mensagens e organização dos commits
-- Testes
-- Layout responsivo
-
-## Dicas
-
-- Teste bem sua solução, evite bugs
-
-  Observações importantes
-- Não inicie o teste sem sanar todas as dúvidas
-- Iremos executar a aplicação para testá-la, cuide com qualquer dependência externa e
-  deixe claro caso haja instruções especiais para execução do mesmo
-  Classificação da informação: Uso Interno
-
-
-
-# desafio-votacao
+---
+**Autor:** [José Nathaniel Lacerda de Abrante](mailto:nathaniel.lacerda@gmail.com)
