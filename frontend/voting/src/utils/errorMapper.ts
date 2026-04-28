@@ -5,6 +5,8 @@ const errorDictionary: Record<string, string> = {
   SESSION_ALREADY_EXISTS: "Esta pauta já possui uma sessão de votação (aberta ou encerrada).",
   NETWORK_ERROR: "Erro de conexão. Verifique sua internet.",
   UNKNOWN_ERROR: "Ocorreu um erro inesperado. Tente novamente mais tarde.",
+  CPF_INVALID: "O CPF informado é inválido.",
+  USER_UNABLE_TO_VOTE: "O CPF informado não está apto a votar.",
 };
 
 export function getErrorMessage(errorCode?: string): string {
