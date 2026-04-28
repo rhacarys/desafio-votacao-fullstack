@@ -17,7 +17,8 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import java.time.LocalDateTime;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.Optional;
 
 @ExtendWith(MockitoExtension.class)
@@ -48,7 +49,7 @@ class AgendaServiceTest {
         lenient().when(agendaMock.getDescription()).thenReturn("Description");
         
         lenient().when(sessionMock.getId()).thenReturn(100L);
-        lenient().when(sessionMock.getOpensAt()).thenReturn(LocalDateTime.now().minusMinutes(5));
+        lenient().when(sessionMock.getOpensAt()).thenReturn(Instant.now().minus(5, ChronoUnit.MINUTES));
     }
 
     @Test
@@ -81,7 +82,7 @@ class AgendaServiceTest {
         when(agendaRepository.findById(agendaId)).thenReturn(Optional.of(agendaMock));
         when(sessionRepository.findByAgendaId(agendaId)).thenReturn(Optional.of(sessionMock));
         when(sessionMock.isOpen()).thenReturn(true);
-        when(sessionMock.getClosesAt()).thenReturn(LocalDateTime.now().plusMinutes(5));
+        when(sessionMock.getClosesAt()).thenReturn(Instant.now().plus(5, ChronoUnit.MINUTES));
 
         AgendaDetailsDTO result = agendaService.getAgendaDetails(agendaId);
 
@@ -100,8 +101,8 @@ class AgendaServiceTest {
         when(agendaRepository.findById(agendaId)).thenReturn(Optional.of(agendaMock));
         when(sessionRepository.findByAgendaId(agendaId)).thenReturn(Optional.of(sessionMock));
         when(sessionMock.isOpen()).thenReturn(false);
-        when(sessionMock.getClosesAt()).thenReturn(LocalDateTime.now().minusMinutes(1)); // Already closed
-        
+        when(sessionMock.getClosesAt()).thenReturn(Instant.now().minus(1, ChronoUnit.MINUTES)); // Already closed
+
         when(voteRepository.countByVotingSessionIdAndChoice(sessionId, VoteChoice.YES)).thenReturn(10L);
         when(voteRepository.countByVotingSessionIdAndChoice(sessionId, VoteChoice.NO)).thenReturn(5L);
 

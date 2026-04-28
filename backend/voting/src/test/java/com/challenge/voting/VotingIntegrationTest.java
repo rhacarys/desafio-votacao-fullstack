@@ -17,9 +17,8 @@ import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.time.LocalDateTime;
-
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -76,8 +75,7 @@ class VotingIntegrationTest {
         Agenda agenda = agendaRepository.save(Agenda.builder().title("Unique").description("Desc").build());
         VotingSession session = sessionRepository.save(VotingSession.builder()
                 .agenda(agenda)
-                .opensAt(LocalDateTime.now())
-                .closesAt(LocalDateTime.now().plusMinutes(5))
+                .opensAt(Instant.now())
                 .build());
 
         var vote = new VoteRequestDTO("11122233344", VoteChoice.NO);
@@ -101,8 +99,8 @@ class VotingIntegrationTest {
         Agenda agenda = agendaRepository.save(Agenda.builder().title("Expired").description("Desc").build());
         VotingSession session = sessionRepository.save(VotingSession.builder()
                 .agenda(agenda)
-                .opensAt(LocalDateTime.now().minusMinutes(10))
-                .closesAt(LocalDateTime.now().minusMinutes(1)) // Already closed
+                .opensAt(Instant.now().minus(10, ChronoUnit.MINUTES))
+                .closesAt(Instant.now().minus(1, ChronoUnit.MINUTES)) // Already closed
                 .build());
 
         var vote = new VoteRequestDTO("55566677788", VoteChoice.YES);

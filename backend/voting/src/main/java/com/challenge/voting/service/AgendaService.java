@@ -11,7 +11,7 @@ import com.challenge.voting.repository.VoteRepository;
 import com.challenge.voting.repository.VotingSessionRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.Optional;
 
 @Service
@@ -30,8 +30,8 @@ public class AgendaService {
 
         AgendaStatus status = AgendaStatus.PENDING;
         Long sessionId = null;
-        LocalDateTime opensAt = null;
-        LocalDateTime closesAt = null;
+        Instant opensAt = null;
+        Instant closesAt = null;
         Long yesVotes = 0L;
         Long noVotes = 0L;
         Long totalVotes = 0L;
@@ -44,7 +44,7 @@ public class AgendaService {
 
             if (session.isOpen()) {
                 status = AgendaStatus.OPEN;
-            } else if (LocalDateTime.now().isAfter(closesAt)) {
+            } else if (Instant.now().isAfter(closesAt)) {
                 status = AgendaStatus.CLOSED;
 
                 yesVotes = voteRepository.countByVotingSessionIdAndChoice(session.getId(), VoteChoice.YES);
@@ -54,8 +54,7 @@ public class AgendaService {
         }
 
         return new AgendaDetailsDTO(
-        agenda.getId(), agenda.getTitle(), agenda.getDescription(),
-        status, sessionId, opensAt, closesAt, yesVotes, noVotes, totalVotes
-);
+                agenda.getId(), agenda.getTitle(), agenda.getDescription(),
+                status, sessionId, opensAt, closesAt, yesVotes, noVotes, totalVotes);
     }
 }

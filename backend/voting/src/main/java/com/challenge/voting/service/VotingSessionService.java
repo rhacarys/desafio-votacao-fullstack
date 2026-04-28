@@ -1,6 +1,7 @@
 package com.challenge.voting.service;
 
-import java.time.LocalDateTime;
+import java.time.Duration;
+import java.time.Instant;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -29,12 +30,12 @@ public class VotingSessionService {
 
         // Default 1 minute if not specified or invalid
         int duration = (durationInMinutes != null && durationInMinutes > 0) ? durationInMinutes : 1;
-        LocalDateTime now = LocalDateTime.now();
+        Instant now = Instant.now();
 
         VotingSession session = VotingSession.builder()
                 .agenda(agenda)
                 .opensAt(now)
-                .closesAt(now.plusMinutes(duration))
+                .closesAt(now.plus(Duration.ofMinutes(duration)))
                 .build();
 
         return sessionRepository.save(session);

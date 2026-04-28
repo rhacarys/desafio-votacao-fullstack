@@ -15,9 +15,8 @@ import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
-
-import java.time.LocalDateTime;
-
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doThrow;
@@ -53,8 +52,8 @@ class VotingSessionControllerTest {
         testSession = VotingSession.builder()
                 .id(100L)
                 .agenda(testAgenda)
-                .opensAt(LocalDateTime.now().minusMinutes(5))
-                .closesAt(LocalDateTime.now().plusMinutes(5))
+                .opensAt(Instant.now().minus(5, ChronoUnit.MINUTES))
+                .closesAt(Instant.now().plus(5, ChronoUnit.MINUTES))
                 .build();
     }
 

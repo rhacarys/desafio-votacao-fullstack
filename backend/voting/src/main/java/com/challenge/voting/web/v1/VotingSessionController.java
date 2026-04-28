@@ -8,9 +8,8 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
-import java.time.LocalDateTime;
+import java.time.Instant;
 
-@CrossOrigin(origins = "http://localhost:5173")
 @RestController
 @RequestMapping("/api/v1/sessions")
 @RequiredArgsConstructor
@@ -27,8 +26,8 @@ public class VotingSessionController {
     public record SessionResponse(
             Long sessionId,
             Long agendaId,
-            LocalDateTime opensAt,
-            LocalDateTime closesAt) {
+            Instant opensAt,
+            Instant closesAt) {
     }
 
     @PostMapping("/open")

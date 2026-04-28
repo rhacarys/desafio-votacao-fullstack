@@ -1,7 +1,7 @@
 package com.challenge.voting.application.dto;
 
 import com.challenge.voting.domain.enums.AgendaStatus;
-import java.time.LocalDateTime;
+import java.time.Instant;
 
 public record AgendaDetailsDTO(
     Long id,
@@ -9,8 +9,8 @@ public record AgendaDetailsDTO(
     String description,
     AgendaStatus status,
     Long sessionId,
-    LocalDateTime opensAt,
-    LocalDateTime closesAt,
+    Instant opensAt,
+    Instant closesAt,
     Long yesVotes,
     Long noVotes,
     Long totalVotes

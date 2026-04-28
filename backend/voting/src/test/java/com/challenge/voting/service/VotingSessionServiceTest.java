@@ -15,7 +15,8 @@ import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import java.time.LocalDateTime;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.Optional;
 
 @ExtendWith(MockitoExtension.class)
@@ -60,7 +61,7 @@ class VotingSessionServiceTest {
         assertNotNull(savedSession.getOpensAt());
         assertNotNull(savedSession.getClosesAt());
         
-        LocalDateTime expectedClosesAt = savedSession.getOpensAt().plusMinutes(5);
+        Instant expectedClosesAt = savedSession.getOpensAt().plus(5, ChronoUnit.MINUTES);
         assertEquals(expectedClosesAt, savedSession.getClosesAt());
     }
 
@@ -73,10 +74,10 @@ class VotingSessionServiceTest {
         when(sessionRepository.save(any(VotingSession.class))).thenAnswer(i -> i.getArguments()[0]);
 
         VotingSession resultNull = sessionService.openSession(agendaId, null);
-        assertEquals(resultNull.getOpensAt().plusMinutes(1), resultNull.getClosesAt());
+        assertEquals(resultNull.getOpensAt().plus(1, ChronoUnit.MINUTES), resultNull.getClosesAt());
 
         VotingSession resultZero = sessionService.openSession(agendaId, 0);
-        assertEquals(resultZero.getOpensAt().plusMinutes(1), resultZero.getClosesAt());
+        assertEquals(resultZero.getOpensAt().plus(1, ChronoUnit.MINUTES), resultZero.getClosesAt());
     }
 
     @Test

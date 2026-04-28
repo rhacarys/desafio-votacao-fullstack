@@ -2,7 +2,7 @@ package com.challenge.voting.domain;
 
 import jakarta.persistence.*;
 import lombok.*;
-import java.time.LocalDateTime;
+import java.time.Instant;
 
 @Entity
 @Table(name = "voting_sessions")
@@ -22,10 +22,10 @@ public class VotingSession {
     private Agenda agenda;
 
     @Column(name = "opens_at", nullable = false)
-    private LocalDateTime opensAt;
+    private Instant opensAt;
 
     @Column(name = "closes_at", nullable = false)
-    private LocalDateTime closesAt;
+    private Instant closesAt;
 
     /**
      * Rich Domain Model.
@@ -33,7 +33,7 @@ public class VotingSession {
      * @return true if the voting session is currently open, false otherwise.
      */
     public boolean isOpen() {
-        LocalDateTime now = LocalDateTime.now();
+        Instant now = Instant.now();
         return now.isAfter(this.opensAt) && now.isBefore(this.closesAt);
     }
 }
