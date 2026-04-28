@@ -37,3 +37,13 @@ services:
       - "80:80"
     depends_on:
       - backend
+
+  k6:
+    image: grafana/k6:latest
+    container_name: voting-performance-test
+    volumes:
+      - ./tests:/scripts
+    depends_on:
+      - backend
+    entrypoint: ["k6", "run", "/scripts/performance-test.js"]
+    profiles: [ "test" ]
